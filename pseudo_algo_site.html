@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        
+        .question-container {
+            margin-bottom: 20px;
+        }
+        
+        .question-title {
+            margin-top: 0;
+        }
+        
+        .question-choices {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        
+        .question-choice {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .question-choice:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .question-choice.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .question-choice.correct {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .question-choice.incorrect {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .quiz-result {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+        }
+        
+        .quiz-result h2 {
+            margin-top: 0;
+        }
+        
+        .quiz-result .score {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .quiz-result .summary {
+            margin-top: 10px;
+        }
+        
+        .quiz-result .summary p {
+            margin-bottom: 5px;
+        }
+        
+        .quiz-result .summary .correct {
+            color: #28a745;
+        }
+        
+        .quiz-result .summary .incorrect {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz Generator</h1>
+    <form id="quizForm">
+        <label for="sid">SID:</label><br>
+        <input type="number" id="sid" name="sid" required></input><br><br>
+        <label for="subject">Subject (1 or 2):</label><br>
+        <input type="number" id="subject" name="subject" min="1" max="2" required><br><br>
+
+        <label for="score">Score (0-100):</label><br>
+        <input type="number" id="score" name="score" min="0" max="100" required><br><br>
+
+        <label for="term">Term (prelims, midterm, finals):</label><br>
+        <input type="radio" id="term" value="prelims" name="term" checked>Prelims</input>
+        <input type="radio" id="term" value="midterm" name="term">Midterms</input>
+        <input type="radio" id="term" value="finals" name="term">Finals</input>
+        <br>
+        <input type="submit" value="Generate Quiz">
+    </form>
+
+    <div id="quizResult"></div>
+
+    <script>
+        document.getElementById("quizForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent the form from submitting
+
+            // Function to create HTML elements for each question
+            function displayQuiz(quizData) {
+                var quizResultDiv = document.getElementById("quizResult");
+                quizResultDiv.innerHTML = ""; // Clear previous content
+
+
+                // Add event listener to the submit button
+                var submitButton = document.createElement("button");
+                submitButton.textContent = "Submit Quiz";
+                submitButton.addEventListener("click", function() {
+                    submitQuiz();
+                });
+                // Loop through each question in the quiz data
+                for (var key in quizData) {
+                    if (quizData.hasOwnProperty(key)) {
+
+                quizResultDiv.appendChild(submitButton);
+                        var question = quizData[key];
+
+                        // Create HTML elements for the question
+                        var questionContainer = document.createElement("div");
+                        questionContainer.classList.add("question-container");
+
+                        var questionTitle = document.createElement("h2");
+                        questionTitle.classList.add("question-title");
+                        questionTitle.textContent = question.question;
+                        questionContainer.appendChild(questionTitle);
+
+                        var questionChoices = document.createElement("ul");
+                        questionChoices.classList.add("question-choices");
+
+                        for (var i = 0; i < question.choices.length; i++) {
+                            var questionChoice = document.createElement("li");
+                            questionChoice.classList.add("question-choice");
+                            questionChoice.textContent = question.choices[i];
+                            questionChoice.dataset.index = i;
+                            questionChoice.addEventListener("click", function() {
+                                selectAnswer(this);
+                            });
+                            questionChoices.appendChild(questionChoice);
+                        }
+
+                        questionContainer.appendChild(questionChoices);
+                        quizResultDiv.appendChild(questionContainer);
+                    }
+                }
+            }
+
+            // Function to handle answer selection
+            function selectAnswer(element) {
+                // Deselect other answers
+                var allChoices = element.parentElement.getElementsByClassName("question-choice");
+                for (var i = 0; i < allChoices.length; i++) {
+                    allChoices[i].classList.remove("selected");
+                }
+
+                // Select the clicked answer
+                element.classList.add("selected");
+            }
+
+            // Function to submit the quiz
+            function submitQuiz() {
+                var allChoices = document.getElementsByClassName("question-choice");
+                var selectedAnswers = [];
+                var correctAnswers = [];
+
+                for (var i = 0; i < allChoices.length; i++) {
+                    if (allChoices[i].classList.contains("selected")) {
+                        selectedAnswers.push(allChoices[i].innerHTML);
+                    }
+                }
+
+                var subject = document.getElementById("subject").value;
+                var score = document.getElementById("score").value;
+                var term = getSelectedValue("term");
+
+            
+                // Construct JSON object
+                var data = {
+                    "subject": subject,
+                    "score": score,
+                    "term": term,
+                };
+
+                console.log(data);
+
+                // Send POST request to Flask API endpoint
+                fetch("http://127.0.0.1:5000/quiz", { // Change the URL to your API endpoint
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    score = 0;
+
+                    for (var key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            var question = data[key];
+                            correctAnswers.push(question.answer);
+                        }
+                    }
+                    
+                    console.log(selectedAnswers);
+                    console.log(correctAnswers);
+
+                    for (let i = 0; i < selectedAnswers.length; i++) {
+                        if (selectedAnswers[i] === correctAnswers[i]) {
+                            document.getElementsByClassName("selected")[i].classList.add("correct");
+                            score++;
+                        } else {
+                            document.getElementsByClassName("selected")[i].classList.add("incorrect");
+                        }
+                    }
+
+                    score = ((score/data["num_items"]) * 100).toFixed(0);
+                    
+                    // Display quiz result
+                    var quizResultDiv = document.getElementById("quizResult");
+
+                    var quizResultContainer = document.createElement("div");
+                    quizResultContainer.classList.add("quiz-result");
+
+                    var quizResultScore = document.createElement("div");
+                    quizResultScore.classList.add("score");
+                    quizResultScore.textContent = "Score: " + score + "/" + 100;
+                    quizResultContainer.appendChild(quizResultScore);
+                    quizResultDiv.appendChild(quizResultContainer);
+
+                    var sid = document.getElementById("sid").value
+                    updateScore(sid, subject, term, score)
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            }
+
+            function updateScore(sid, subject, term, score) {
+                subject = (subject == 1) ? "phys1" : "phys2";
+                term = (term === "prelims") ? "p" : (term === "midterm") ? "m" : "f";
+
+                data = {
+                    sid: sid,
+                    target: subject + term + "grade",
+                    score: score
+                }
+
+                fetch("http://127.0.0.1:5000/update_score", {
+                    method: "POST",
+                    headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    console.log('Score updated successfully');
+                })
+                .catch(error => {
+                    console.error('There was a problem updating the score:', error);
+                });
+            }
+
+            function getSelectedValue(target) {
+                var radios = document.getElementsByName(target);
+
+                for (var i = 0; i < radios.length; i++) {
+                    if (radios[i].checked) {
+                    return radios[i].value;
+                    break;
+                    }
+                }
+            }
+
+
+            // Get form values
+            var subject = document.getElementById("subject").value;
+            var score = document.getElementById("score").value;
+            var term = getSelectedValue("term");
+
+            // Construct JSON object
+            var data = {
+                "subject": subject,
+                "score": score,
+                "term": term
+            };
+
+            console.log(data);
+
+            // Send POST request to Flask API endpoint
+            fetch("http://127.0.0.1:5000/quiz", { // Change the URL to your API endpoint
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display quiz data
+                displayQuiz(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+    </script>
+</body>
+</html>
