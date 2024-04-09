@@ -60,9 +60,7 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data);
             quizData = shuffleQuiz(data);
-            console.log(quizData);
 
             // Get the correct answers
             for (let key in quizData) {
@@ -190,9 +188,6 @@
           .then((response) => response.json())
           .then((data) => {
             score = 0;
-
-            console.log(selectedAnswers);
-            console.log(correctAnswers);
 
             for (let i = 0; i < selectedAnswers.length; i++) {
               if (selectedAnswers[i] === correctAnswers[i]) {
