@@ -25,7 +25,6 @@
       4 = physm2score
       5 = physf2score
       */
-      let score = getScore().then((data) => (score = 100));
 
       // Options are "prelims", "midterm", and "finals"
       let term = "prelims";
@@ -35,12 +34,10 @@
       let correctAnswers = [];
 
       // This sets an interval and waits for score to be defined
-      let intervalId = setInterval(() => {
-        if (score !== undefined && score !== Promise) {
-          data = main();
-          clearInterval(intervalId);
-        }
-      }, 2000);
+      getScore().then((scoreData) => {
+        score = scoreData[0];
+        data = main();
+      });
 
       function main() {
         // Send POST request to Flask API endpoint
@@ -150,22 +147,23 @@
           sid: sid,
         };
 
-        await fetch("http://localhost:5000/get_score", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            score = data;
-          })
-          .catch((error) => {
-            console.error("Error:", error);
+        try {
+          const response = await fetch("http://localhost:5000/get_score", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
           });
 
-        return score;
+          const jsonData = await response.json();
+          score = jsonData;
+
+          return score;
+        } catch (error) {
+          console.error("Error:", error);
+          throw error; // Rethrow the error to propagate it further if needed
+        }
       }
       // Function to submit the quiz
       function submitQuiz(correctAnswers) {
