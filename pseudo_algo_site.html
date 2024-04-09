@@ -89,15 +89,41 @@
   </head>
   <body>
     <h1>Quiz Generator</h1>
-    <form id="quizForm">
-      <label for="sid">SID:</label><br />
-      <input type="number" id="sid" name="sid" required /><br /><br />
-    </form>
-
     <div id="quizResult"></div>
 
     <script>
-      event.preventDefault(); // Prevent the form from submitting
+      // Set quiz data depending on the reviewer
+      let sid = 1; // TODO: Get the student ID from the user
+      let subject = 2;
+      let score = 1; //TODO: Get the score from the database
+      let term = "finals";
+
+      // Construct JSON object
+      var data = {
+        subject: subject,
+        score: score,
+        term: term,
+      };
+
+      console.log(data);
+
+      // Send POST request to Flask API endpoint
+      fetch("http://127.0.0.1:5000/quiz", {
+        // Change the URL to your API endpoint
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Display quiz data
+          displayQuiz(data);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
 
       // Function to create HTML elements for each question
       function displayQuiz(quizData) {
@@ -169,19 +195,6 @@
             selectedAnswers.push(allChoices[i].innerHTML);
           }
         }
-
-        var subject = document.getElementById("subject").value;
-        var score = document.getElementById("score").value;
-        var term = getSelectedValue("term");
-
-        // Construct JSON object
-        var data = {
-          subject: subject,
-          score: score,
-          term: term,
-        };
-
-        console.log(data);
 
         // Send POST request to Flask API endpoint
         fetch("http://127.0.0.1:5000/quiz", {
@@ -279,38 +292,6 @@
           }
         }
       }
-
-      // Get form values
-      var subject = document.getElementById("subject").value;
-      var score = document.getElementById("score").value;
-      var term = getSelectedValue("term");
-
-      // Construct JSON object
-      var data = {
-        subject: subject,
-        score: score,
-        term: term,
-      };
-
-      console.log(data);
-
-      // Send POST request to Flask API endpoint
-      fetch("http://127.0.0.1:5000/quiz", {
-        // Change the URL to your API endpoint
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // Display quiz data
-          displayQuiz(data);
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
     </script>
   </body>
 </html>
