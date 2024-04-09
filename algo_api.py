@@ -4,7 +4,7 @@ import mysql.connector
 import json
 
 app = Flask(__name__)
-CORS(app, origins=["localhost"])
+CORS(app)
 
 # Function to connect to the MySQL database and fetch questions
 def fetch_questions_from_mysql(table_name, term_value):
