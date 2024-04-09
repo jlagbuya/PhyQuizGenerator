@@ -189,6 +189,10 @@ def main(subject,score, term):
 def serve_html():
     return send_file('pseudo_algo_site.html')
 
+@app.route('/styles')
+def serve_css():
+    return send_file('styles.css')
+
 @app.route('/quiz', methods=['POST'])
 def get_quiz():
     data = request.json
