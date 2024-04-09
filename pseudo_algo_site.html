@@ -30,10 +30,12 @@
       // Options are "prelims", "midterm", and "finals"
       let term = "prelims";
 
+      let data = null;
+
       // This sets an interval and waits for score to be defined
       let intervalId = setInterval(() => {
         if (score !== undefined && score !== Promise) {
-          main();
+          data = main();
           clearInterval(intervalId);
         }
       }, 1000);
@@ -65,6 +67,8 @@
           .catch((error) => {
             console.error("Error:", error);
           });
+
+        return data;
       }
 
       // Function to create HTML elements for each question
@@ -211,7 +215,6 @@
             quizResultContainer.appendChild(quizResultScore);
             quizResultDiv.appendChild(quizResultContainer);
 
-            let sid = document.getElementById("sid").value;
             updateScore(sid, subject, term, score);
           })
           .catch((error) => {
