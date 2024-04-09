@@ -220,6 +220,7 @@ def get_quiz():
 
     res = main(subject, score, term)
     print(f"quiz for phys{subject}:\n Score: {score}\n Weakness: {100 - score}\n Term: {term}")
+    print(f" Number of Questions: {res['num_items']}")
     return res
 
 @app.route('/get_score', methods=['POST'])
