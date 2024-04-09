@@ -111,10 +111,12 @@
             let questionChoices = document.createElement("ul");
             questionChoices.classList.add("question-choices");
 
-            for (let i = 0; i < question.choices.length; i++) {
+            let choices = shuffleArray(question.choices);
+
+            for (let i = 0; i < choices.length; i++) {
               let questionChoice = document.createElement("li");
               questionChoice.classList.add("question-choice");
-              questionChoice.textContent = question.choices[i];
+              questionChoice.textContent = choices[i];
               questionChoice.dataset.index = i;
               questionChoice.addEventListener("click", function () {
                 selectAnswer(this);
