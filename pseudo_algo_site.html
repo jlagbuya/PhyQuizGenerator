@@ -41,7 +41,7 @@
       function main() {
         // Send POST request to Flask API endpoint
         // Construct JSON object
-        var data = {
+        let data = {
           subject: subject,
           score: score,
           term: term,
@@ -69,35 +69,35 @@
 
       // Function to create HTML elements for each question
       function displayQuiz(quizData) {
-        var quizResultDiv = document.getElementById("quizResult");
+        let quizResultDiv = document.getElementById("quizResult");
         quizResultDiv.innerHTML = ""; // Clear previous content
 
         // Add event listener to the submit button
-        var submitButton = document.createElement("button");
+        let submitButton = document.createElement("button");
         submitButton.textContent = "Submit Quiz";
         submitButton.addEventListener("click", function () {
           submitQuiz();
         });
         // Loop through each question in the quiz data
-        for (var key in quizData) {
+        for (let key in quizData) {
           if (quizData.hasOwnProperty(key)) {
             quizResultDiv.appendChild(submitButton);
-            var question = quizData[key];
+            let question = quizData[key];
 
             // Create HTML elements for the question
-            var questionContainer = document.createElement("div");
+            let questionContainer = document.createElement("div");
             questionContainer.classList.add("question-container");
 
-            var questionTitle = document.createElement("h2");
+            let questionTitle = document.createElement("h2");
             questionTitle.classList.add("question-title");
             questionTitle.textContent = question.question;
             questionContainer.appendChild(questionTitle);
 
-            var questionChoices = document.createElement("ul");
+            let questionChoices = document.createElement("ul");
             questionChoices.classList.add("question-choices");
 
-            for (var i = 0; i < question.choices.length; i++) {
-              var questionChoice = document.createElement("li");
+            for (let i = 0; i < question.choices.length; i++) {
+              let questionChoice = document.createElement("li");
               questionChoice.classList.add("question-choice");
               questionChoice.textContent = question.choices[i];
               questionChoice.dataset.index = i;
@@ -116,9 +116,9 @@
       // Function to handle answer selection
       function selectAnswer(element) {
         // Deselect other answers
-        var allChoices =
+        let allChoices =
           element.parentElement.getElementsByClassName("question-choice");
-        for (var i = 0; i < allChoices.length; i++) {
+        for (let i = 0; i < allChoices.length; i++) {
           allChoices[i].classList.remove("selected");
         }
 
@@ -151,11 +151,11 @@
       }
       // Function to submit the quiz
       function submitQuiz() {
-        var allChoices = document.getElementsByClassName("question-choice");
-        var selectedAnswers = [];
-        var correctAnswers = [];
+        let allChoices = document.getElementsByClassName("question-choice");
+        let selectedAnswers = [];
+        let correctAnswers = [];
 
-        for (var i = 0; i < allChoices.length; i++) {
+        for (let i = 0; i < allChoices.length; i++) {
           if (allChoices[i].classList.contains("selected")) {
             selectedAnswers.push(allChoices[i].innerHTML);
           }
@@ -174,9 +174,9 @@
           .then((data) => {
             score = 0;
 
-            for (var key in data) {
+            for (let key in data) {
               if (data.hasOwnProperty(key)) {
-                var question = data[key];
+                let question = data[key];
                 correctAnswers.push(question.answer);
               }
             }
@@ -200,18 +200,18 @@
             score = ((score / data["num_items"]) * 100).toFixed(0);
 
             // Display quiz result
-            var quizResultDiv = document.getElementById("quizResult");
+            let quizResultDiv = document.getElementById("quizResult");
 
-            var quizResultContainer = document.createElement("div");
+            let quizResultContainer = document.createElement("div");
             quizResultContainer.classList.add("quiz-result");
 
-            var quizResultScore = document.createElement("div");
+            let quizResultScore = document.createElement("div");
             quizResultScore.classList.add("score");
             quizResultScore.textContent = "Score: " + score + "/" + 100;
             quizResultContainer.appendChild(quizResultScore);
             quizResultDiv.appendChild(quizResultContainer);
 
-            var sid = document.getElementById("sid").value;
+            let sid = document.getElementById("sid").value;
             updateScore(sid, subject, term, score);
           })
           .catch((error) => {
@@ -248,9 +248,9 @@
       }
 
       function getSelectedValue(target) {
-        var radios = document.getElementsByName(target);
+        let radios = document.getElementsByName(target);
 
-        for (var i = 0; i < radios.length; i++) {
+        for (let i = 0; i < radios.length; i++) {
           if (radios[i].checked) {
             return radios[i].value;
             break;
