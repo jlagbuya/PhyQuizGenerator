@@ -44,6 +44,24 @@ def fetch_questions_from_mysql(table_name, term_value):
 
     return questions, choices, answers
 
+def get_student_score(sid):
+    connection = mysql.connector.connect(
+        host="153.92.15.7",
+        user="u464153715_login",
+        password="Wandat1!",
+        database="u464153715_login"
+    )
+
+    cursor = connection.cursor()
+
+    query = f"SELECT * FROM students WHERE sid = {sid};"
+
+    cursor.execute(query)
+
+    row = cursor.fetchall()
+
+    return row;
+
 def update_student_score(sid, target, score):
     connection = mysql.connector.connect(
         host="153.92.15.7",
@@ -200,13 +218,17 @@ def get_quiz():
     score = int(data.get('score'))
     term = data.get('term')
 
-    # Your main logic here
-    # Call your main function passing subject, score, and term
-    # Return JSON response containing quiz data
-    # Example: return jsonify({"quiz": quiz_data})
     res = main(subject, score, term)
-    print(res)
     return res
+
+@app.route('/get_score', methods=['POST'])
+def get_score():
+    data = request.json
+    sid = int(data.get('sid'))
+
+    score = get_student_score(sid)[0][4:]
+    print(score)
+    return jsonify(score)
 
 @app.route('/update_score', methods=['POST'])
 def update_score():

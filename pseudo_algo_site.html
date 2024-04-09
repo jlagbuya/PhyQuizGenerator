@@ -12,36 +12,60 @@
     <script>
       // Set quiz data depending on the reviewer
       let sid = 1; // TODO: Get the student ID from the user
-      let subject = 2;
-      let score = 1; //TODO: Get the score from the database
-      let term = "finals";
 
-      // Construct JSON object
-      var data = {
-        subject: subject,
-        score: score,
-        term: term,
-      };
+      // Set subject to 1 for Phys1 and 2 for Phys2
+      let subject = 1;
 
-      console.log(data);
+      /* 
+      For score, change the value of data[0] to the index that matches the term score.
+      0 = physp1score
+      1 = physm1score
+      2 = physf1score
+      3 = physp2score
+      4 = physm2score
+      5 = physf2score
+      */
+      let score = getScore().then((data) => (score = data[0]));
 
-      // Send POST request to Flask API endpoint
-      fetch("http://127.0.0.1:5000/quiz", {
-        // Change the URL to your API endpoint
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // Display quiz data
-          displayQuiz(data);
+      // Options are "prelims", "midterm", and "finals"
+      let term = "prelims";
+
+      // This sets an interval and waits for score to be defined
+      let intervalId = setInterval(() => {
+        if (score) {
+          main();
+          clearInterval(intervalId);
+        }
+      }, 1000);
+
+      function main() {
+        // Send POST request to Flask API endpoint
+        // Construct JSON object
+        var data = {
+          subject: subject,
+          score: score,
+          term: term,
+        };
+
+        console.log(data);
+
+        fetch("http://127.0.0.1:5000/quiz", {
+          // Change the URL to your API endpoint
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
         })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+          .then((response) => response.json())
+          .then((data) => {
+            // Display quiz data
+            displayQuiz(data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
 
       // Function to create HTML elements for each question
       function displayQuiz(quizData) {
@@ -102,6 +126,29 @@
         element.classList.add("selected");
       }
 
+      async function getScore() {
+        let score = 0;
+        let data = {
+          sid: sid,
+        };
+
+        await fetch("http://localhost:5000/get_score", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            score = data;
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+
+        return score;
+      }
       // Function to submit the quiz
       function submitQuiz() {
         var allChoices = document.getElementsByClassName("question-choice");
