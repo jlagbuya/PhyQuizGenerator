@@ -92,24 +92,11 @@
     <form id="quizForm">
         <label for="sid">SID:</label><br>
         <input type="number" id="sid" name="sid" required></input><br><br>
-        <label for="subject">Subject (1 or 2):</label><br>
-        <input type="number" id="subject" name="subject" min="1" max="2" required><br><br>
-
-        <label for="score">Score (0-100):</label><br>
-        <input type="number" id="score" name="score" min="0" max="100" required><br><br>
-
-        <label for="term">Term (prelims, midterm, finals):</label><br>
-        <input type="radio" id="term" value="prelims" name="term" checked>Prelims</input>
-        <input type="radio" id="term" value="midterm" name="term">Midterms</input>
-        <input type="radio" id="term" value="finals" name="term">Finals</input>
-        <br>
-        <input type="submit" value="Generate Quiz">
     </form>
 
     <div id="quizResult"></div>
 
     <script>
-        document.getElementById("quizForm").addEventListener("submit", function(event) {
             event.preventDefault(); // Prevent the form from submitting
 
             // Function to create HTML elements for each question
@@ -321,7 +308,6 @@
             .catch(error => {
                 console.error("Error:", error);
             });
-        });
     </script>
 </body>
 </html>
