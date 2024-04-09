@@ -25,12 +25,14 @@
       4 = physm2score
       5 = physf2score
       */
-      let score = getScore().then((data) => (score = data[0]));
+      let score = getScore().then((data) => (score = 100));
 
       // Options are "prelims", "midterm", and "finals"
       let term = "prelims";
 
       let data = null;
+
+      let correctAnswers = [];
 
       // This sets an interval and waits for score to be defined
       let intervalId = setInterval(() => {
@@ -61,8 +63,20 @@
         })
           .then((response) => response.json())
           .then((data) => {
+            console.log(data);
+            quizData = shuffleQuiz(data);
+            console.log(quizData);
+
+            // Get the correct answers
+            for (let key in quizData) {
+              if (quizData.hasOwnProperty(key)) {
+                let question = quizData[key];
+                correctAnswers.push(question.answer);
+              }
+            }
+
             // Display quiz data
-            displayQuiz(data);
+            displayQuiz(quizData, correctAnswers);
           })
           .catch((error) => {
             console.error("Error:", error);
@@ -72,7 +86,7 @@
       }
 
       // Function to create HTML elements for each question
-      function displayQuiz(quizData) {
+      function displayQuiz(quizData, correctAnswers) {
         let quizResultDiv = document.getElementById("quizResult");
         quizResultDiv.innerHTML = ""; // Clear previous content
 
@@ -80,7 +94,7 @@
         let submitButton = document.createElement("button");
         submitButton.textContent = "Submit Quiz";
         submitButton.addEventListener("click", function () {
-          submitQuiz();
+          submitQuiz(correctAnswers);
         });
         // Loop through each question in the quiz data
         for (let key in quizData) {
@@ -154,10 +168,9 @@
         return score;
       }
       // Function to submit the quiz
-      function submitQuiz() {
+      function submitQuiz(correctAnswers) {
         let allChoices = document.getElementsByClassName("question-choice");
         let selectedAnswers = [];
-        let correctAnswers = [];
 
         for (let i = 0; i < allChoices.length; i++) {
           if (allChoices[i].classList.contains("selected")) {
@@ -178,13 +191,6 @@
           .then((data) => {
             score = 0;
 
-            for (let key in data) {
-              if (data.hasOwnProperty(key)) {
-                let question = data[key];
-                correctAnswers.push(question.answer);
-              }
-            }
-
             console.log(selectedAnswers);
             console.log(correctAnswers);
 
@@ -201,7 +207,9 @@
               }
             }
 
+            console.log(score);
             score = ((score / data["num_items"]) * 100).toFixed(0);
+            console.log(score);
 
             // Display quiz result
             let quizResultDiv = document.getElementById("quizResult");
@@ -259,6 +267,37 @@
             break;
           }
         }
+      }
+
+      function shuffleQuiz(quiz) {
+        // Extract num_items and remove it from the quiz object
+        const numItems = quiz.num_items;
+        delete quiz.num_items;
+
+        // Convert the remaining quiz object into an array of question objects
+        const questionsArray = Object.values(quiz);
+
+        // Shuffle the array of question objects
+        const shuffledQuestions = shuffleArray(questionsArray);
+
+        // Reconstruct the shuffled quiz object
+        const shuffledQuiz = {};
+        shuffledQuestions.forEach((question, index) => {
+          shuffledQuiz[index + 1] = question;
+        });
+
+        // Restore num_items at the end of the shuffled quiz object
+        shuffledQuiz.num_items = numItems;
+
+        return shuffledQuiz;
+      }
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
       }
     </script>
   </body>
