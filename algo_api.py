@@ -110,7 +110,7 @@ def main(subject,score, term):
     # 12 Questions Easy
     if NOT_SATISFACTORY:
         # Your code for NOT_SATISFACTORY condition
-        fetched = fetch_questions_from_mysql(f"avephysics{subject}", term_value)
+        fetched = fetch_questions_from_mysql(f"easyphysics{subject}", term_value)
         questions = fetched[0]
         choices = fetched[1]
         answers = fetched[2]
