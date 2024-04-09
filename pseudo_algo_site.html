@@ -32,7 +32,7 @@
 
       // This sets an interval and waits for score to be defined
       let intervalId = setInterval(() => {
-        if (score) {
+        if (score !== undefined && score !== Promise) {
           main();
           clearInterval(intervalId);
         }
