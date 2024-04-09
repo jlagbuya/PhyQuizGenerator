@@ -219,6 +219,7 @@ def get_quiz():
     term = data.get('term')
 
     res = main(subject, score, term)
+    print(f"quiz for phys{subject}:\n Score: {score}\n Weakness: {100 - score}\n Term: {term}")
     return res
 
 @app.route('/get_score', methods=['POST'])
@@ -227,7 +228,7 @@ def get_score():
     sid = int(data.get('sid'))
 
     score = get_student_score(sid)[0][4:]
-    print(score)
+    print(f"get_score for SID {sid}: {score}")
     return jsonify(score)
 
 @app.route('/update_score', methods=['POST'])
@@ -238,7 +239,7 @@ def update_score():
     score = int(data.get('score'))
 
     update_student_score(sid, subject, score)
-    print(sid, subject, score)
+    print(f"update_score for SID {sid}:\n Subject: {subject}\n Score: {score}")
     return "okay"
 
 if __name__ == '__main__':
