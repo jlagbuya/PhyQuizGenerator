@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import mysql.connector
 import json
+import random
 
 app = Flask(__name__)
-CORS(app, origins=["localhost"])
+CORS(app)
 
 # Function to connect to the MySQL database and fetch questions
 def fetch_questions_from_mysql(table_name, term_value):
@@ -43,6 +44,24 @@ def fetch_questions_from_mysql(table_name, term_value):
     connection.close()
 
     return questions, choices, answers
+
+def get_student_score(sid):
+    connection = mysql.connector.connect(
+        host="153.92.15.7",
+        user="u464153715_login",
+        password="Wandat1!",
+        database="u464153715_login"
+    )
+
+    cursor = connection.cursor()
+
+    query = f"SELECT * FROM students WHERE sid = {sid};"
+
+    cursor.execute(query)
+
+    row = cursor.fetchall()
+
+    return row;
 
 def update_student_score(sid, target, score):
     connection = mysql.connector.connect(
@@ -88,11 +107,10 @@ def main(subject,score, term):
         print("Invalid term!")
         return
     
-
     # 12 Questions Easy
     if NOT_SATISFACTORY:
         # Your code for NOT_SATISFACTORY condition
-        fetched = fetch_questions_from_mysql(f"avephysics{subject}", term_value)
+        fetched = fetch_questions_from_mysql(f"easyphysics{subject}", term_value)
         questions = fetched[0]
         choices = fetched[1]
         answers = fetched[2]
@@ -101,64 +119,61 @@ def main(subject,score, term):
     elif SATISFACTORY:
         # Fetch from Easy
         easy_fetched = fetch_questions_from_mysql(f"easyphysics{subject}", term_value)
-        questions = easy_fetched[0][:4]
+        questions_easy = random.sample(easy_fetched[0], 4)
         choices_easy = easy_fetched[1]
         answers_easy = easy_fetched[2]
 
         # Fetch from Average
         avg_fetch = fetch_questions_from_mysql(f"avephysics{subject}", term_value)
-        questions = questions + avg_fetch[0][:4]
-        choices_easy_avg = list(choices_easy.values())[:4] + list(avg_fetch[1].values())[:4]
-        answers_easy_avg = list(answers_easy.values())[:4] + list(avg_fetch[2].values())[:4]
+        questions_avg = random.sample(avg_fetch[0], 4)
+        choices_avg = avg_fetch[1]
+        answers_avg = avg_fetch[2]
 
-        choices = {}
-        answers = {}
-        for i in range(len(choices_easy_avg)):
-            choices[i+1] = choices_easy_avg[i]
-            answers[i+1] = answers_easy_avg[i]
- 
+        questions = questions_easy + questions_avg
+        choices = list(choices_easy.values())[:4] + list(choices_avg.values())[:4]
+        answers = list(answers_easy.values())[:4] + list(answers_avg.values())[:4]
+
     # 2 Questions Easy, 1 Question Average, 2 Questions Difficult
     elif VERY_SATISFACTORY:
-         # Fetch from Easy
+        # Fetch from Easy
         fetched = fetch_questions_from_mysql(f"easyphysics{subject}", term_value)
-        questions = fetched[0][:2]
+        questions_easy = random.sample(fetched[0], 2)
         choices_easy = fetched[1]
         answers_easy = fetched[2]
 
         # Fetch from Average
         avg_fetch = fetch_questions_from_mysql(f"avephysics{subject}", term_value)
-        questions = questions + avg_fetch[0][:1]
-        choices_easy_avg = list(choices_easy.values())[:2] + list(avg_fetch[1].values())[:1]
-        answers_easy_avg = list(answers_easy.values())[:2] + list(avg_fetch[2].values())[:1]
+        questions_avg = random.sample(avg_fetch[0], 1)
+        choices_avg = avg_fetch[1]
+        answers_avg = avg_fetch[2]
 
         # Fetch from Difficult
         diff_fetch = fetch_questions_from_mysql(f"diffphysics{subject}", term_value)
-        questions = questions + diff_fetch[0][:2]
-        choices_easy_avg_diff = choices_easy_avg + list(diff_fetch[1].values())[:2]
-        answers_easy_avg_diff = answers_easy_avg + list(diff_fetch[2].values())[:2]
+        questions_diff = random.sample(diff_fetch[0], 2)
+        choices_diff = diff_fetch[1]
+        answers_diff = diff_fetch[2]
 
-        choices = {}
-        answers = {}
-        for i in range(len(choices_easy_avg_diff)):
-            choices[i+1] = choices_easy_avg_diff[i]
-            answers[i+1] = answers_easy_avg_diff[i]
-
-
-    # Print the number of questions fetched based on weakness
-    # print(f"Total questions fetched based on weakness: {len(questions)}")
-
-    # print("Term value:", term_value)
+        questions = questions_easy + questions_avg + questions_diff
+        choices = list(choices_easy.values())[:2] + list(choices_avg.values())[:1] + list(choices_diff.values())[:2]
+        answers = list(answers_easy.values())[:2] + list(answers_avg.values())[:1] + list(answers_diff.values())[:2]
 
     # Create a dictionary to store questions
     quiz = {}
     for i, question in enumerate(questions, start=1):
         quiz_item = {}
         quiz_item["question"] = question
-        quiz_item["choices"] = choices[i]
-        quiz_item["answer"] = answers[i]
+
+        if NOT_SATISFACTORY:
+            quiz_item["choices"] = choices[i]
+            quiz_item["answer"] = answers[i]
+        else:
+            quiz_item["choices"] = choices[i-1]  # Adjusting index to start from 0
+            quiz_item["answer"] = answers[i-1]  # Adjusting index to start from 0
+        
         quiz[f"{i}"] = quiz_item
 
     quiz["num_items"] = len(questions)
+
 
 
     # Convert the dictionary to a JSON string
@@ -189,6 +204,10 @@ def main(subject,score, term):
 def serve_html():
     return send_file('pseudo_algo_site.html')
 
+@app.route('/styles')
+def serve_css():
+    return send_file('styles.css')
+
 @app.route('/quiz', methods=['POST'])
 def get_quiz():
     data = request.json
@@ -196,13 +215,19 @@ def get_quiz():
     score = int(data.get('score'))
     term = data.get('term')
 
-    # Your main logic here
-    # Call your main function passing subject, score, and term
-    # Return JSON response containing quiz data
-    # Example: return jsonify({"quiz": quiz_data})
     res = main(subject, score, term)
-    print(res)
+    print(f"quiz for phys{subject}:\n Score: {score}\n Weakness: {100 - score}\n Term: {term}")
+    print(f" Number of Questions: {res['num_items']}")
     return res
+
+@app.route('/get_score', methods=['POST'])
+def get_score():
+    data = request.json
+    sid = int(data.get('sid'))
+
+    score = get_student_score(sid)[0][4:]
+    print(f"get_score for SID {sid}: {score}")
+    return jsonify(score)
 
 @app.route('/update_score', methods=['POST'])
 def update_score():
@@ -212,7 +237,7 @@ def update_score():
     score = int(data.get('score'))
 
     update_student_score(sid, subject, score)
-    print(sid, subject, score)
+    print(f"update_score for SID {sid}:\n Subject: {subject}\n Score: {score}")
     return "okay"
 
 if __name__ == '__main__':
