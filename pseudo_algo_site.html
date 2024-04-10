@@ -50,7 +50,7 @@
 
         console.log(data);
 
-        fetch("http://127.0.0.1:5000/quiz", {
+        fetch("http://3.107.29.130/quiz", {
           // Change the URL to your API endpoint
           method: "POST",
           headers: {
@@ -148,7 +148,7 @@
         };
 
         try {
-          const response = await fetch("http://localhost:5000/get_score", {
+          const response = await fetch("http://3.107.29.130/get_score", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -177,7 +177,7 @@
         }
 
         // Send POST request to Flask API endpoint
-        fetch("http://127.0.0.1:5000/quiz", {
+        fetch("http://3.107.29.130/quiz", {
           // Change the URL to your API endpoint
           method: "POST",
           headers: {
@@ -233,7 +233,7 @@
           score: score,
         };
 
-        fetch("http://127.0.0.1:5000/update_score", {
+        fetch("http://3.107.29.130/update_score", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
